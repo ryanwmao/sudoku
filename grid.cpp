@@ -2,9 +2,11 @@
 #include <iterator>
 using namespace std;
 
+#define DIM 9
+
 class Grid {
    private:
-    int grid[9][9];
+    int grid[DIM][DIM];
 
     void initGrid() {
         for (int i = 0; i < sizeof grid / sizeof grid[0]; i++) {
@@ -17,35 +19,24 @@ class Grid {
    public:
     Grid() {}
 
-    void returnGrid(int*** ptr) {
-        int dim = sizeof grid / sizeof grid[0];
-        int** temp = new int*[dim];
-        for (int i = 0; i < sizeof grid / sizeof grid[0]; i++) {
-            temp[i] = new int[dim];
-            for (int j = 0; j < sizeof grid[0] / sizeof(int); j++) {
-                temp[i][j] = grid[i][j];
+    void returnGrid(int res[DIM][DIM]) {
+        for (int i = 0; i < DIM; i++) {
+            for (int j = 0; j < DIM; j++) {
+                res[i][j] = grid[i][j];
             }
-        };
-
-        *ptr = temp;
+        }
     }
 };
 
 int main() {
     Grid grid;
-    int** ptr;
+    int board[DIM][DIM];
 
-    grid.returnGrid(&ptr);
+    grid.returnGrid(board);
 
-    //  for (int i = 0; i < sizeof(&ptr) / sizeof(&ptr[0]); i++) {
-    //      for (int j = 0; j < sizeof(&ptr[0]) / sizeof(int); j++) {
-    //          cout << ptr[i][j] << " ";
-    //      }
-    //      cout << "\n";
-    //  }
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            cout << ptr[i][j] << " ";
+            cout << board[i][j] << " ";
         }
         cout << "\n";
     }
