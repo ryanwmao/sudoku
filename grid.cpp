@@ -17,7 +17,10 @@ class Grid {
     }
 
    public:
-    Grid() {}
+    Grid() {
+        cout << "init board \n";
+        initGrid();
+    }
 
     void returnGrid(int res[DIM][DIM]) {
         for (int i = 0; i < DIM; i++) {
