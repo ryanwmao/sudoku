@@ -28,21 +28,28 @@ class Grid {
             }
         }
 
-        // fill diagonal
-        for (int i = 0; i < (int)sqrt(DIM); i++) {
-            int arr[DIM];
-            iota(arr, arr + DIM, 1);
-            shuffle(arr, arr + DIM, generator);
-            // cout << "shuffled";
-            // for (int i = 0; i < DIM; i++) {
-            //     cout << arr[i] << " ";
-            // }
-            // cout << "\n";
-            int idx = 0;
-            for (int row = i * 3; row < i * 3 + 3; row++) {
-                for (int col = i * 3; col < i * 3 + 3; col++) {
-                    grid[row][col] = arr[idx];
-                    idx += 1;
+        int randoms[DIM * DIM][DIM];
+        int idxs[DIM * DIM];
+        for (int i = 0; i < DIM * DIM; i++) {
+            iota(randoms[i], randoms[i] + DIM, 1);
+            shuffle(randoms[i], randoms[i] + DIM, generator);
+            idxs[i] = 0;
+        }
+
+        int idx = 0;
+        while (idx < DIM * DIM) {
+            int row = idx / DIM + 1;
+            int col = idx % DIM + 1;
+
+            if (valid(row, col, randoms[idx][idxs[idx]])) {
+                grid[row - 1][col - 1] = randoms[idx][idxs[idx]];
+                idx += 1;
+            } else {
+                idxs[idx] += 1;
+                while (idxs[idx] > 9) {
+                    idxs[idx] = 0;
+                    idx -= 1;
+                    idxs[idx] += 1;
                 }
             }
         }
@@ -61,7 +68,7 @@ class Grid {
         idx -= 1;
         set<int> row;
         for (int i = 0; i < DIM; i++) {
-            if (row.count(grid[idx][i])) {
+            if (grid[idx][i] != 0 && row.count(grid[idx][i])) {
                 return false;
             }
             row.insert(grid[idx][i]);
@@ -76,7 +83,7 @@ class Grid {
         set<int> sqr;
         for (int i = row; i < row + 3; i++) {
             for (int j = col; j < col + 3; j++) {
-                if (sqr.count(grid[i][j])) {
+                if (grid[i][j] != 0 && sqr.count(grid[i][j])) {
                     return false;
                 }
                 sqr.insert(grid[i][j]);
@@ -92,12 +99,26 @@ class Grid {
         idx -= 1;
         set<int> col;
         for (int i = 0; i < DIM; i++) {
-            if (col.count(grid[i][idx])) {
+            if (grid[i][idx] != 0 && col.count(grid[i][idx])) {
                 return false;
             }
             col.insert(grid[i][idx]);
         }
         return true;
+    }
+
+    bool valid(int row, int col, int num) {
+        if (row < 1 or row > DIM or col < 1 or col > DIM or num < 1 or
+            num > DIM) {
+            return false;
+        }
+
+        int prev = grid[row - 1][col - 1];
+        grid[row - 1][col - 1] = num;
+        bool validNum = checkCol(col) && checkRow(row) &&
+                        checkSqr(((row - 1) / 3) * 3 + 1 + (col - 1) / 3);
+        grid[row - 1][col - 1] = prev;
+        return validNum;
     }
 
     void returnGrid(int res[DIM][DIM]) {
@@ -121,15 +142,6 @@ int main() {
         }
         cout << "\n";
     }
-    cout << "\n";
-    cout << "Row 1: " << grid.checkRow(1) << "\n";
-    cout << "Row 9: " << grid.checkRow(9) << "\n";
-    cout << "Col 1: " << grid.checkCol(1) << "\n";
-    cout << "Col 9: " << grid.checkCol(9) << "\n";
-    cout << "Sqr 1: " << grid.checkSqr(1) << "\n";
-    cout << "Sqr 2: " << grid.checkSqr(2) << "\n";
-    cout << "Sqr 5: " << grid.checkSqr(5) << "\n";
-    cout << "Sqr 8: " << grid.checkSqr(8) << "\n";
-    cout << "Sqr 9: " << grid.checkSqr(9) << "\n";
+
     return 0;
 }
