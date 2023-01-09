@@ -1,4 +1,5 @@
 #include <iostream>
+#include <numeric>
 #include <random>
 #include <set>
 using namespace std;
@@ -21,7 +22,99 @@ class Grid {
    private:
     int grid[DIM][DIM];
 
-    void initGrid() {
+    bool unique() {
+        int zeros = 0;
+        for (int i = 0; i < DIM; i++) {
+            for (int j = 0; j < DIM; j++) {
+                if (grid[i][j] == 0) {
+                    zeros += 1;
+                }
+            }
+        }
+
+        if (zeros == 0) {
+            return true;
+        }
+
+        // nums[zeros]: 1 -- 9
+        int nums[zeros];
+
+        // zidxs[zeros]: idx value for each zero
+        int zidxs[zeros];
+
+        for (int i = 0; i < zeros; i++) {
+            nums[i] = 1;
+        }
+
+        int idx = 0;
+        for (int i = 0; i < DIM * DIM; i++) {
+            int row = i / DIM + 1;
+            int col = i % DIM + 1;
+            if (grid[row - 1][col - 1] == 0) {
+                zidxs[idx] = i;
+                idx += 1;
+            }
+        }
+
+        idx = 0;
+        int solns = 0;
+        while (nums[0] < 9) {
+            if (idx > zeros) {
+                if (valid(DIM, DIM, grid[DIM - 1][DIM - 1])) {
+                    if (solns == 1) {
+                        for (int i = 0; i < zeros; i++) {
+                            int row = zidxs[i] / DIM + 1;
+                            int col = zidxs[i] % DIM + 1;
+                            grid[row - 1][col - 1] = 0;
+                        }
+                        return false;
+                    }
+                    solns += 1;
+                }
+
+                while (idx > 0 && nums[idx] >= 9) {
+                    nums[idx] = 1;
+                    idx -= 1;
+                    nums[idx] += 1;
+                }
+            }
+
+            if (nums[0] == 9) {
+                for (int i = 0; i < zeros; i++) {
+                    int row = zidxs[i] / DIM + 1;
+                    int col = zidxs[i] % DIM + 1;
+                    grid[row - 1][col - 1] = 0;
+                }
+                return true;
+            }
+
+            int row = zidxs[idx] / DIM + 1;
+            int col = zidxs[idx] % DIM + 1;
+
+            if (valid(row, col, nums[idx])) {
+                grid[row - 1][col - 1] = nums[idx];
+                idx += 1;
+            } else {
+                nums[idx] += 1;
+                while (idx > 0 && nums[idx] >= 9) {
+                    nums[idx] = 1;
+                    idx -= 1;
+                    nums[idx] += 1;
+                }
+            }
+        }
+
+        for (int i = 0; i < zeros; i++) {
+            int row = zidxs[i] / DIM + 1;
+            int col = zidxs[i] % DIM + 1;
+            grid[row - 1][col - 1] = 0;
+        }
+
+        return true;
+    }
+
+    // 0 = easy, 1 = med, 2 = hard
+    void initGrid(int difficulty) {
         for (int i = 0; i < DIM; i++) {
             for (int j = 0; j < DIM; j++) {
                 grid[i][j] = 0;
@@ -46,19 +139,49 @@ class Grid {
                 idx += 1;
             } else {
                 idxs[idx] += 1;
-                while (idxs[idx] > 9) {
+                while (idxs[idx] >= 9) {
                     idxs[idx] = 0;
                     idx -= 1;
                     idxs[idx] += 1;
                 }
             }
         }
+
+        cout << "board filled; poking holes \n";
+
+        int remove;
+        if (difficulty == 0) {
+            remove = 10;
+        } else if (difficulty == 1) {
+            remove = 25;
+        } else {
+            remove = 50;
+        }
+
+        int gridcells[DIM * DIM];
+        iota(gridcells, gridcells + DIM * DIM, 0);
+        shuffle(gridcells, gridcells + DIM * DIM, generator);
+        idx = 0;
+
+        while (remove > 0 && idx < DIM * DIM) {
+            int i = gridcells[idx];
+            int row = i / DIM + 1;
+            int col = i % DIM + 1;
+            int prev = grid[row - 1][col - 1];
+            grid[row - 1][col - 1] = 0;
+            if (unique()) {
+                remove -= 1;
+            } else {
+                grid[row - 1][col - 1] = prev;
+            }
+            idx += 1;
+        }
     };
 
    public:
-    Grid() {
-        cout << "init board \n";
-        initGrid();
+    Grid(int difficulty) {
+        cout << "init board difficulty " << difficulty << "\n";
+        initGrid(difficulty);
     }
 
     bool checkRow(int idx) {
@@ -131,7 +254,7 @@ class Grid {
 };
 
 int main() {
-    Grid grid;
+    Grid grid(0);
     int board[DIM][DIM];
 
     grid.returnGrid(board);
